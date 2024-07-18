@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+{% load static %}
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preload" href="http://{{ request.get_host }}/static/fonts/montserrat/static/montserrat-regular.ttf"
+    as="font" crossorigin>
+  <link rel="icon" type="image/png" sizes="16x16" href="http://{{ request.get_host }}/favicon.png">
+  <link rel="stylesheet" href="{% static 'css/bootstrap.my.css' %}">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v={% now "U" %}">
+</head>
+
+<body>
+
+
+  <div class="modal_reg">
+    <div class="modal_dialog" role="document">
+      <div class="modal_content">
+        <div class="close_modal">
+          <span>&times;</span>
+        </div>
+        <div class="modal_header">
+          <h5 class="modal_title" id="authModalLabel">Написать сообщение</h5>
+
+        </div>
+        <div class="modal_body">
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="body_main">
+    <main>
+      {% block content %}
+      {% endblock %}
+    </main>
+  </div>
+  <footer class="">
+    {% include 'includes/footer.html' %}
+  </footer>
+  <script src="{% static 'js/jquery3-6-0.min.js' %}"></script>
+  <script defer src="{% static 'js/main.js' %}?v={% now "U" %}"></script>
+
+  <script>
+    $(document).ready(function() {
+        $('#weather-form').on('submit', function(e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: '',
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.temperature) {
+                        $('#result').html(
+                            `<h2>Текущая погода в ${response.city}:</h2>
+                            <p>Температура: ${response.temperature}°C</p>
+                            <p>Скорость ветра: ${response.windspeed} м/с</p>`
+                        );
+                    } else if (response.error) {
+                        $('#result').html(`<p>${response.error}</p>`);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#result').html(`<p>Произошла ошибка: ${xhr.responseJSON.error}</p>`);
+                }
+            });
+        });
+
+        // Проверяем, есть ли последний просмотренный город и предлагаем его
+        const lastCity = "{{ last_city }}";
+        if (lastCity) {
+            $('#last-city').html(`Хотите узнать погоду в <strong>${lastCity}</strong> снова?`).show();
+            $('#last-city').click(function(e) {
+                e.preventDefault();
+                $('#id_city').val(lastCity);
+                $('#weather-form').submit();
+            }).css('cursor', 'pointer');
+        }
+    });
+</script>
+
+</body>
